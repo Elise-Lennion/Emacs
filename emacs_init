@@ -1,0 +1,95 @@
+;---------------------------;
+;;; Packages Installation ;;;
+;---------------------------;
+
+;; MELPA packages
+(require 'package)
+
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(when (< emacs-major-version 24)
+  ;; For important compatibility libraries like cl-lib
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+
+(package-initialize)
+
+(when (not package-archive-contents)
+  (package-refresh-contents))
+
+(defvar myPackages
+  '(better-defaults
+	;; ein ;; integracao com Jupyter, nao sei usar isso
+	elpy
+	flycheck
+    material-theme
+	zenburn-theme
+	py-autopep8))
+
+(mapc #'(lambda (package)
+    (unless (package-installed-p package)
+      (package-install package)))
+      myPackages)
+
+;-------------------;
+;;; Customization ;;;
+;-------------------;
+
+;; (setq inhibit-startup-message t) ;; hide the startup message
+;;(load-theme 'material t) ;; load material theme
+(load-theme 'zenburn t) ;; load zenburn
+(global-linum-mode t) ;; enable line numbers globally
+
+;---------;
+;;; C++ ;;;
+;---------;
+
+(add-hook 'c++-mode-hook 'irony-mode)
+(add-hook 'c-mode-hook 'irony-mode)
+(add-hook 'objc-mode-hook 'irony-mode)
+
+;; replace the `completion-at-point' and `complete-symbol' bindings in
+;; irony-mode's buffers by irony-mode's function
+(defun my-irony-mode-hook ()
+  (define-key irony-mode-map [remap completion-at-point]
+    'irony-completion-at-point-async)
+  (define-key irony-mode-map [remap complete-symbol]
+    'irony-completion-at-point-async))
+(add-hook 'irony-mode-hook 'my-irony-mode-hook)
+(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+(add-hook 'irony-mode-hook 'company-mode)
+(add-hook 'irony-mode-hook
+          (lambda () (local-set-key (kbd "C-c C-d")
+								(lambda ()
+									(interactive)
+									 (man (current-word))))
+			)
+)
+(add-hook 'irony-mode-hook 'flycheck-mode)
+
+;------------;
+;;; PYTHON ;;;
+;------------;
+
+;; elpy
+(elpy-enable)
+(elpy-use-ipython)
+;; workaround para versao 5 do ipython
+(setq python-shell-interpreter "ipython"
+    python-shell-interpreter-args "--simple-prompt --pprint")
+
+;; flycheck
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+;; autopep8
+(require 'py-autopep8)
+(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+
+;-----------;
+;;; Modes ;;;
+;-----------;
+
+;; Ido mode
+(require 'ido)
+(ido-mode t)
