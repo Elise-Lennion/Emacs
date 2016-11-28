@@ -54,7 +54,10 @@
 (global-set-key [s-down] 'windmove-down)
 
 ;; tab identation
+;;(setq-default indent-tabs-mode nil)
+(setq-default indent-tabs-mode t)
 (setq-default tab-width 8)
+;;(setq indent-line-function 'insert-tab)
 (defvaralias 'c-basic-offset 'tab-width)
 (defvaralias 'c++-basic-offset 'tab-width)
 
